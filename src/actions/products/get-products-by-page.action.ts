@@ -1,5 +1,6 @@
+import type { ProductWithImages } from "@/interfaces";
 import { defineAction } from "astro:actions";
-import { count, db, eq, Product, ProductImage } from "astro:db";
+import { count, db, eq, Product, ProductImage, sql } from "astro:db";
 import { z } from "astro:schema";
 
 export const getProductsByPage = defineAction({
@@ -17,20 +18,31 @@ export const getProductsByPage = defineAction({
 
     if (page > totalPages) {
       return {
-        products: [],
+        products: [] as ProductWithImages[],
         totalPages: totalPages,
       };
     }
 
-    const products = await db
-      .select()
-      .from(Product)
-      .innerJoin(ProductImage, eq(Product.id, ProductImage.productId))
-      .limit(limit)
-      .offset((page - 1) * 12);
+    const productsQuery = sql`
+      select a.*,
+      ( select GROUP_CONCAT(image,',') from 
+	        ( select * from ${ProductImage} where productId = a.id limit 2 )
+      ) as images
+      from ${Product} a
+      LIMIT ${limit} OFFSET ${(page - 1) * limit};
+    `;
+
+    const { rows } = await db.run(productsQuery);
+
+    // const products = await db
+    //   .select()
+    //   .from(Product)
+    //   .innerJoin(ProductImage, eq(Product.id, ProductImage.productId))
+    //   .limit(limit)
+    //   .offset((page - 1) * 12);
 
     return {
-      products: products,
+      products: rows as unknown as ProductWithImages[],
       totalPages: totalPages,
     };
   },
