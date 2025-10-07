@@ -6,7 +6,12 @@ import { actions } from "astro:actions";
 
 export const prerender = false; // Not needed in 'server' mode
 
-const { data, error } = await Astro.callAction(actions.getProductsByPage, {});
+const searchParams = Astro.url.searchParams;
+const pageParam = Number(searchParams.get("page") ?? 1);
+
+const { data, error } = await Astro.callAction(actions.getProductsByPage, {
+  page: pageParam,
+});
 
 if (error) {
   return Astro.redirect("/");
