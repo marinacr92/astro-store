@@ -58,6 +58,8 @@ export const prerender = false;
 </MainLayout>
 
 <script>
+  import { CartCookiesClient } from "@/utils";
+
   const sizeElements = document.querySelectorAll("li");
   sizeElements.forEach((liElement) => {
     liElement.addEventListener("click", (event) => {
@@ -95,12 +97,13 @@ export const prerender = false;
 
     addToCardBtn.disabled = true;
 
-    //* Esto sería lo que mandaríamos al backend para guardar en el carrito de compra como una cookie
-    console.log({
-      id: productIdInput.value,
+    CartCookiesClient.addItem({
+      productId: productIdInput.value,
       size: size,
       quantity: quantity,
     });
+
+    window.location.href = "/cart";
   });
 </script>
 
