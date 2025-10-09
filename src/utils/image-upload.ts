@@ -16,8 +16,20 @@ export class ImageUpload {
       `data:image/${imageType};base64,${base64Image}`
     );
 
-    console.log(resp);
-
     return resp.secure_url;
+  }
+
+  static async delete(image: string) {
+    try {
+      const imageName = image.split("/").pop() ?? "";
+      const imageId = imageName.split(".")[0];
+
+      const resp = await cloudinary.uploader.destroy(imageId);
+
+      return true;
+    } catch (error) {
+      console.log(error);
+      return false;
+    }
   }
 }
